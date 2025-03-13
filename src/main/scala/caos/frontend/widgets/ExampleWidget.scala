@@ -24,6 +24,10 @@ class ExampleWidget(title:String
 
   private val examples = config.examples
 
+  private var currentExample: Option[Example] = config.examples.headOption
+
+  def getCurrentExample: Option[Example] = currentExample
+
   override def get: Seq[(String,String)] = examples.map(e=>e.name->e.example).toSeq
 
   /**
@@ -115,6 +119,7 @@ class ExampleWidget(title:String
   protected def genButton(ex:Example,buttonsDiv:Block): Unit = {
     val button = buttonsDiv.append("button").textEl(ex.name)
     button.on("click",() => {
+      currentExample = Some(ex)
       setableExample.setValue(ex.example)
       ex.setting match
         case Some(setting) =>
@@ -133,6 +138,7 @@ class ExampleWidget(title:String
   def loadButton(button:String): Boolean = {
     examples.find(ex=>ex.name == button) match {
       case Some(ex) =>
+        currentExample = Some(ex)
         setableExample.setValue(ex.example)
         ex.setting match
           case Some(setting) =>
@@ -184,6 +190,4 @@ object ExampleWidget {
 //    .replaceAll("\\\\n","\\n")
 //    .replaceAll("\\\"","\"")
     .replaceAll("§MODL;","module")
-
-
 }
