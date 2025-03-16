@@ -34,6 +34,9 @@ case class Setting(name: String = null, children: List[Setting] = List(), checke
   override def toString: String = toStringAuxiliary()
 
   //noinspection ScalaWeakerAccess
+  def toStringRaw: String = s"Setting($name, ${children.map(child => child.toStringRaw)}, $checked, $options)"
+
+  //noinspection ScalaWeakerAccess
   private def resolvePathAuxiliary(remainingPath: List[String]): Option[Setting] = {
     remainingPath match
       case Nil => None

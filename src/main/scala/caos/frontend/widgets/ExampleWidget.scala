@@ -1,6 +1,6 @@
 package caos.frontend.widgets
 
-import caos.frontend.Configurator
+import caos.frontend.{Configurator, Setting, SettingParser}
 import caos.frontend.widgets.Setable
 import caos.frontend.Configurator.Example
 import org.scalajs.dom
@@ -169,8 +169,9 @@ object ExampleWidget {
           val (name, rest) = unfix(ex).span(_ != ':')
           val rest2 = rest.drop(18) // drop "description"
           val (desc, rest3) = rest2.span(_ != '\n')
-          val code = rest3.tail
-          Example(code.trim, name.trim, desc.trim)
+          val (code, rest4) = rest3.span(_ != '@')
+          val settings = rest4.tail
+          Example(code.trim, name.trim, desc.trim, Some(SettingParser.parseSetting(settings.trim)))
         } catch {
           case e:Throwable => throw new RuntimeException(s"Failed to import when reading: $ex")
         }
@@ -179,7 +180,7 @@ object ExampleWidget {
 
   def examplesToTxt(examples:Iterable[Example]): String =
     examples.map(e => s"module ${e.name}:\\n// description: ${
-      fix(e.description)}\\n${fix(e.example)}").mkString("\\n\\n")
+      fix(e.description)}\\n${fix(e.example)}\n@${fix(e.setting.getOrElse(Setting()).toStringRaw)}").mkString("\\n\\n")
 
   private def fix(s:String): String = s
       .replaceAll("\\\\n","§NL;") // replaced in UTILS
