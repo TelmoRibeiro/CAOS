@@ -94,8 +94,8 @@ object Site:
     settingWidget.getOrElse(throw RuntimeException("settingWidget is undefined")).init(leftColumn, true)
 
     val title = document.getElementById("title")
-    val toolTitle = document.getElementById("tool-title")
     title.textContent = config.name
+    val toolTitle = document.getElementById("tool-title")
     toolTitle.textContent = config.name
 
     examplesWidget = Some(new ExampleWidget("Examples",config,globalReload(),codeWidget.getOrElse(throw RuntimeException("codeWidget is undefined")),Some(descriptionArea),settingWidget.getOrElse(throw RuntimeException("settingWidget is undefined"))))
@@ -104,11 +104,17 @@ object Site:
     descriptionArea.init(leftColumn) // before the examples
     examplesWidget.getOrElse(throw RuntimeException("examplesWidget is undefined")).init(leftColumn,true)
 
+    mainExample match
+      case Some(ex) => if (ex.description.nonEmpty) {
+        descriptionArea.setValue(ex.description)
+        val settingWidgetDefined = settingWidget.getOrElse(throw RuntimeException("settingWidget is undefined"))
+        settingWidgetDefined.set(ex.setting.getOrElse(Setting()))
+        settingWidgetDefined.update()
+      }
+      case _ =>
+
     renderWidgets()
 
-    mainExample match
-      case Some(ex) => if (ex.description.nonEmpty) descriptionArea.setValue(ex.description)
-      case _ =>
   /**
    * Make widget box
    * @param w widget info

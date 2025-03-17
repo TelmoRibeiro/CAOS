@@ -1,8 +1,8 @@
 package caos.frontend.widgets
 
 import caos.frontend.{Configurator, Setting, SettingParser}
-import caos.frontend.widgets.Setable
 import caos.frontend.Configurator.Example
+import caos.frontend.widgets.Setable
 import org.scalajs.dom
 import org.scalajs.dom.{DOMException, Event, FileReader, UIEvent}
 //import org.w3c.dom.DOMError
@@ -40,64 +40,10 @@ class ExampleWidget(title:String
     val buttonsDiv = super.panelBox(div,visible,buttons=buttons).append("div")
       .attr("id", "buttons")
       .attr("style","padding: 2pt;")
-
-//    val inp = buttonsDiv.append("input")
-//      .attr("type","file")
-//      .attr("id","file")
-//      .attr("name","files[]")
-//
-//    import concurrent.ExecutionContext.Implicits.global
-//    def printFileContent(file: dom.File) =
-//      readTextFile(file).map {
-//        case Right(fileContent) => println(s"File content: $fileContent")
-//        case Left(error) => println(s"Could not read file ${file.name}. Error: $error")
-//      }
-//
-//    /** In the future, returns either the file's content or an error,
-//    if something went wrong */
-//    def readTextFile(fileToRead: dom.File): Future[Either[DOMException, String]] = {
-//
-//      // Used to create the Future containing either the file content or an error
-//      val promisedErrorOrContent = Promise[Either[DOMException, String]]
-//
-//      val reader = new FileReader()
-//      reader.readAsText(fileToRead, "UTF-8")
-//
-//      reader.onload = (_) => {
-//        val resultAsString = s"${reader.result}"
-//        promisedErrorOrContent.success(Right(resultAsString))
-//      }
-//      reader.onerror = (_: Event) => promisedErrorOrContent.success(Left(reader.error))
-//
-//      promisedErrorOrContent.future
-//    }
-////    val reader = new dom.FileReader()
-////    reader.readAsText(e.currentTarget.files.item(0))
-////    reader.onload(
-////    scalajs.js.eval(
-////      """function startRead(evt) {
-////        |    var file = document.getElementById('file').files[0];
-////        |    if (file) {
-////        |        //  getAsText(file);
-////        |        alert("Name: " + file.name + "\n" + "Last Modified Date :" + file.lastModifiedDate);
-////        |    }
-////        |}""".stripMargin
-////    )
-
-    buttonsDiv
       .style("display:block; padding:2pt")
 
-    for (ex <- examples ) yield genButton(ex,buttonsDiv)
+    for (ex <- examples ) yield genButton(ex, buttonsDiv)
   }
-
-//  @JSExportTopLevel("loadedFile")
-//  def loadedFile(ev: dom.Event): Unit = {
-//    println("File Loaded Successfully");
-//    var fileString = ev.target.toString;
-//    println(fileString);
-////    $$("#op").text(fileString);
-////    appendPar(document.body, "You clicked the button!")
-//  }
 
   private def buttons = List(
     Right("upload")-> (
@@ -162,33 +108,45 @@ object ExampleWidget {
 //    btt.append()
   }
 
-  def txtToExamples(str:String): Iterable[Example] = {
+  def txtToExamples(str: String): Iterable[Example] = {
     val list = str.split("module *")
-      for (ex <- list if ex != "") yield {
-        try {
-          val (name, rest) = unfix(ex).span(_ != ':')
-          val rest2 = rest.drop(18) // drop "description"
-          val (desc, rest3) = rest2.span(_ != '\n')
-          val (code, rest4) = rest3.span(_ != '@')
-          val settings = rest4.tail
-          Example(code.trim, name.trim, desc.trim, Some(SettingParser.parseSetting(settings.trim)))
-        } catch {
-          case e:Throwable => throw new RuntimeException(s"Failed to import when reading: $ex")
-        }
+    for (ex <- list if ex != "") yield {
+      try {
+        val (name, rest) = ex.span(_ != ':')
+        val rest2 = rest.drop(18) // drop "description"
+        val (desc, rest3) = rest2.span(_ != '\n')
+        val (code, rest4) = rest3.span(_ != '@')
+        val settings = rest4.tail
+        Example(unfix(code.trim)
+          , unfix(name.trim)
+          , unfix(desc.trim)
+          , Some(SettingParser(unfix(settings.trim)))
+        )
+      } catch {
+        case e:Throwable => throw new RuntimeException(s"Failed to import when reading: $ex")
       }
+    }
   }
 
-  def examplesToTxt(examples:Iterable[Example]): String =
-    examples.map(e => s"module ${e.name}:\\n// description: ${
-      fix(e.description)}\\n${fix(e.example)}\n@${fix(e.setting.getOrElse(Setting()).toStringRaw)}").mkString("\\n\\n")
+  def examplesToTxt(examples: Iterable[Example]): String = {
+    examples.map(e =>
+      s"module ${e.name}:\\n" +
+        s"// description: ${fix(e.description)}\\n" +
+        s"${fix(e.example)}\\n" +
+        s"@${fix(e.setting.getOrElse(Setting()).toStringRaw)}"
+    ).mkString("\\n\\n")
+  }
 
-  private def fix(s:String): String = s
+  private def fix(unfixedString: String): String = {
+    unfixedString
       .replaceAll("\\\\n","§NL;") // replaced in UTILS
-//      .replaceAll("\"","\\\"")
       .replaceAll("module","§MODL;")
+      .replaceAll("@","§AT;")
+  }
 
-  private def unfix(s:String): String = s
-//    .replaceAll("\\\\n","\\n")
-//    .replaceAll("\\\"","\"")
-    .replaceAll("§MODL;","module")
+  private def unfix(fixedString: String): String = {
+    fixedString
+      .replaceAll("§MODL;","module")
+      .replaceAll("§AT;","@")
+  }
 }
