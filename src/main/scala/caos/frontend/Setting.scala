@@ -3,10 +3,10 @@ package caos.frontend
 import scala.annotation.targetName
 import scala.language.implicitConversions
 
-case class Setting(name: String = null, children: List[Setting] = List.empty, checked: Boolean = false, options: List[String] = List.empty) {
+case class Setting(name: Option[String] = None, children: List[Setting] = List.empty, checked: Boolean = false, options: List[String] = List.empty) {
   @targetName("allowOne")
   def ||(setting: Setting): Setting = {
-    val groupName = s"${this.name} || ${setting.name}"
+    val groupName = Some(s"${this.name} || ${setting.name}")
     if (this.options.contains("allowOne")) {
       Setting(groupName, this.children :+ setting, this.checked, this.options)
     } else {
@@ -16,7 +16,7 @@ case class Setting(name: String = null, children: List[Setting] = List.empty, ch
 
   @targetName("allowAll")
   def &&(setting: Setting): Setting = {
-    val groupName = s"${this.name} && ${setting.name}"
+    val groupName = Some(s"${this.name} && ${setting.name}")
     if (this.options.contains("allowAll")) {
       Setting(groupName, this.children :+ setting, this.checked, this.options)
     } else {
@@ -40,8 +40,8 @@ case class Setting(name: String = null, children: List[Setting] = List.empty, ch
   private def resolvePathAuxiliary(remainingPath: List[String]): Option[Setting] = {
     remainingPath match
       case Nil => None
-      case this.name :: Nil  => Some(this)
-      case this.name :: tail => this.children.collectFirst(Function.unlift(_.resolvePathAuxiliary(tail)))
+      case name :: Nil  if name == this.name.get => Some(this)
+      case name :: tail if name == this.name.get => this.children.collectFirst(Function.unlift(_.resolvePathAuxiliary(tail)))
       case head :: tail => None
   }
 
@@ -136,7 +136,7 @@ case class Setting(name: String = null, children: List[Setting] = List.empty, ch
     resolvePath(path).map(Setting.apply).getOrElse(Set.empty)
   }
 
-  def unapply: Option[(String, List[Setting], Boolean, List[String])] = {
+  def unapply: Option[(Option[String], List[Setting], Boolean, List[String])] = {
     Setting.unapply(this)
   }
 }
@@ -176,7 +176,7 @@ object Setting {
     allActiveLeavesFrom(setting)
   }
 
-  def unapply(setting: Setting): Option[(String, List[Setting], Boolean, List[String])] = {
+  def unapply(setting: Setting): Option[(Option[String], List[Setting], Boolean, List[String])] = {
     Some((setting.name, setting.children, setting.checked, setting.options))
   }
 }

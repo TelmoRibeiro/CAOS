@@ -19,7 +19,7 @@ object SettingParser extends RegexParsers {
   private def setting: Parser[Setting] = {
     "Setting(" ~> nameID ~ "," ~ maybeChildren ~ "," ~ bool ~ "," ~ maybeOptions <~ ")" ^^ {
       case name ~ _ ~ children ~ _ ~ checked ~ _ ~ options =>
-        Setting(name, children, checked, options)
+        Setting(Some(name), children, checked, options)
     }
   }
 

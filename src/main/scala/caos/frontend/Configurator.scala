@@ -239,11 +239,11 @@ object Configurator:
 
   /** Helper to build settings without employing Setting(...) */
   implicit def toSetting(name: String): Setting =
-    Setting(name)
+    Setting(Some(name))
 
   /** Helper to build settings while naming the internal nodes */
   implicit def toSettingRenamed(nameSetting: (String, Setting)): Setting =
-    Setting(nameSetting._1, nameSetting._2.children, nameSetting._2.checked, nameSetting._2.options)
+    Setting(Some(nameSetting._1), nameSetting._2.children, nameSetting._2.checked, nameSetting._2.options)
 
   implicit def toDocumentation(docs:List[((String,String),String)]): Documentation =
     Documentation().add(docs)

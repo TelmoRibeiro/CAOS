@@ -27,7 +27,7 @@ abstract class SettingWidget[A](title: String, doc: Documentation, config: Confi
     val settingContainerDiv = document.getElementById("setting-container").asInstanceOf[html.Div]
     settingContainerDiv.innerHTML = ""
 
-    if setting != Setting() then renderSetting(setting, settingContainerDiv, currentPath = setting.name)
+    if setting != Setting() then renderSetting(setting, settingContainerDiv, currentPath = setting.name.get)
   end update
 
   private def renderSetting(currentSetting: Setting, parentDiv: html.Div, indentationLevel: Int = 0, currentPath: String): Unit =
@@ -47,7 +47,7 @@ abstract class SettingWidget[A](title: String, doc: Documentation, config: Confi
 
     val checkbox = document.createElement("input").asInstanceOf[html.Input]
     checkbox.setAttribute("type", "checkbox")
-    checkbox.setAttribute("name", currentSetting.name)
+    checkbox.setAttribute("name", currentSetting.name.get)
     checkbox.checked = currentSetting.checked
     checkbox.onchange = (_: Event) => {
       val isChecked = checkbox.checked
@@ -66,7 +66,7 @@ abstract class SettingWidget[A](title: String, doc: Documentation, config: Confi
 
       val settingContainerDiv = document.getElementById("setting-container").asInstanceOf[html.Div]
       settingContainerDiv.innerHTML = ""
-      renderSetting(setting, settingContainerDiv, currentPath = setting.name)
+      renderSetting(setting, settingContainerDiv, currentPath = setting.name.get)
     }
 
     currentDiv.appendChild(checkbox)
